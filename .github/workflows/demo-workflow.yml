@@ -1,14 +1,14 @@
 name: hello-world
 permissions:
-  id-token: write # This is required for requesting the JWT 
-  contents: read  # This is required for checkout
+  id-token: write # Required for requesting the JWT 
+  contents: read  # Required for checkout
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
-  
+
 jobs:
   fetch-secret-from-conjur:
     runs-on: ubuntu-latest
@@ -20,7 +20,17 @@ jobs:
           account: ${{ vars.CONJUR_ACCOUNT }}
           authn_id: ${{ vars.CONJUR_AUTHN_ID }}
           secrets: data/vault/demo-github/github-app01/username|SECRET1;data/vault/demo-github/github-app01/password|SECRET2
-      - name : Echo USERNAME
+
+      - name: Echo USERNAME
         run: echo $SECRET1 | sed 's/./& /g'
-      - name : Echo PASSWORD
+
+      - name: Echo PASSWORD
         run: echo $SECRET2 | sed 's/./& /g'
+
+      - name: Debug JWT
+        run: |
+          echo "Authenticate via Authn-JWT"
+          echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
+          echo $ACTIONS_ID_TOKEN_REQUEST_URL
+          JWT_TOKEN=$(curl -H "Authorization:bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          echo $JWT_TOKEN | base64
