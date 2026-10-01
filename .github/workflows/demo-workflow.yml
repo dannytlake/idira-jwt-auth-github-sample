@@ -30,7 +30,7 @@ jobs:
       - name: Debug JWT
         run: |
           echo "Authenticate via Authn-JWT"
-          echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
-          echo $ACTIONS_ID_TOKEN_REQUEST_URL
-          JWT_TOKEN=$(curl -H "Authorization:bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
-          echo $JWT_TOKEN | base64
+          JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+
+          # Extract 2nd section (payload), convert base64url chars, decode, and format JSON
+          echo "$JWT_TOKEN" | cut -d'.' -f2 | tr '_-' '/+' | base64 -d 2>/dev/null | jq .
