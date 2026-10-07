@@ -28,9 +28,37 @@ jobs:
         run: echo $SECRET2 | sed 's/./& /g'
 
       - name: Debug JWT
+        if: false # Disabled for demo; set to true to inspect the JWT claims
         run: |
           echo "Authenticate via Authn-JWT"
           JWT_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
 
           # Extract 2nd section (payload), convert base64url chars, decode, and format JSON
           echo "$JWT_TOKEN" | cut -d'.' -f2 | tr '_-' '/+' | base64 -d 2>/dev/null | jq .
+
+      # --- Fictional build/deploy steps (simulated for demo purposes) ---
+      # SECRET1/SECRET2 were fetched from Conjur at runtime above. They are NOT
+      # stored in GitHub Secrets, so every run gets the current value. When Idira
+      # rotates the credential on the target, the next run picks it up with no
+      # changes to this repo or its settings.
+
+      - name: Run database migrations
+        run: |
+          echo "Connecting to app01 database as user: $(echo $SECRET1 | sed 's/./& /g')"
+          echo "Using credential fetched from Conjur at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "  -> Not stored in GitHub Secrets: always the latest version"
+          echo "  -> If Idira rotated this password, this run already has the new one"
+          echo "Applying migrations... (simulated)"
+          sleep 2
+          echo "Migrations complete."
+
+      - name: Deploy application
+        run: |
+          echo "Building app01 release... (simulated)"
+          sleep 2
+          echo "Injecting database credentials into app runtime config... (simulated)"
+          echo "  -> Credentials live only in this runner's memory for the job's lifetime"
+          echo "  -> No copies to update when the password changes. Idira manages"
+          echo "     rotation on the target, and Conjur hands the pipeline the current value"
+          sleep 2
+          echo "Deployment of app01 complete."
