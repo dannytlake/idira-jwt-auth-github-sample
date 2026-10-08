@@ -1,0 +1,29 @@
+# Workloads: the reporting app's dev and prod pipelines, in one file.
+#
+#   conjur policy update -b data -f policy/reporting.yml
+#
+# Each pipeline has no password and no API key. It logs in with a GitHub OIDC
+# token, and only from this repo and its own branch. Each one may read its
+# own safe, and nothing else.
+
+# Dev pipeline: logs in from the dev branch, reads dev-reporting-app.
+- !host
+  id: github-apps/reporting-dev
+  annotations:
+    authn-jwt/github/repository_id: "1400719326"
+    authn-jwt/github/ref: refs/heads/dev
+
+- !grant
+  role: !group vault/dev-reporting-app/delegation/consumers
+  member: !host github-apps/reporting-dev
+
+# Prod pipeline: logs in from the prod branch, reads prod-reporting-app.
+- !host
+  id: github-apps/reporting-prod
+  annotations:
+    authn-jwt/github/repository_id: "1400719326"
+    authn-jwt/github/ref: refs/heads/prod
+
+- !grant
+  role: !group vault/prod-reporting-app/delegation/consumers
+  member: !host github-apps/reporting-prod

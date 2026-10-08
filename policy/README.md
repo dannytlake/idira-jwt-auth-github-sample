@@ -10,6 +10,9 @@ access to one safe.
 
 To onboard the next app, copy one file and change the names.
 
+`reporting.yml` holds the same two workloads in one file. Use either the
+combined file or the two single files, not both.
+
 These files are examples. They are not applied to a tenant yet. Before you
 apply them:
 
