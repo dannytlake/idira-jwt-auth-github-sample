@@ -1,0 +1,18 @@
+# Workload: the reporting app's dev pipeline.
+#
+#   conjur policy update -b data -f policy/reporting-dev.yml
+
+# 1. Who the workload is.
+#    It has no password and no API key. It logs in with a GitHub OIDC token,
+#    and only from this repo and the dev branch.
+- !host
+  id: github-apps/reporting-dev
+  annotations:
+    authn-jwt/github/repository_id: "1400719326"
+    authn-jwt/github/ref: refs/heads/dev
+
+# 2. What the workload may read.
+#    The dev-reporting-app safe, and nothing else.
+- !grant
+  role: !group vault/dev-reporting-app/delegation/consumers
+  member: !host github-apps/reporting-dev
